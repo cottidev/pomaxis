@@ -1,0 +1,25 @@
+{
+  "name": "Pomaxis",
+  "short_name": "Pomaxis",
+  "description": "A minimalist Pomodoro timer with customizable durations, soft background moods, and a lightweight task list.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#4c80ad",
+  "theme_color": "#4c80ad",
+  "icons": [
+    {
+      "src": "pomaxis_icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "pomaxis_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

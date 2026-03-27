@@ -1,0 +1,335 @@
+:root {
+  --bg-work: #4c80ad;
+  --bg-short: #5f8ea2;
+  --bg-long: #6f7fa6;
+  --bg-active: var(--bg-work);
+  --text-strong: rgba(255, 255, 255, 0.96);
+  --text-soft: rgba(255, 255, 255, 0.72);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text-strong);
+  background: var(--bg-active);
+  transition: background 420ms ease;
+}
+
+.page-bg {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.14), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.app-logo {
+  box-shadow:
+    0 10px 24px rgba(10, 16, 28, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.preset-tab,
+.session-tab {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.preset-tab.active,
+.session-tab.active {
+  background: rgba(0, 0, 0, 0.12);
+  color: white;
+  box-shadow: 0 10px 25px rgba(10, 16, 28, 0.08);
+}
+
+.color-swatch {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.color-swatch:hover {
+  transform: translateY(-1px);
+}
+
+.color-swatch.selected {
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.timer-pop {
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease,
+    text-shadow 220ms ease;
+  text-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+}
+
+.timer-pop.switching {
+  opacity: 0.68;
+  transform: translateY(4px);
+}
+
+.start-button {
+  box-shadow:
+    0 14px 30px rgba(10, 16, 28, 0.14),
+    0 4px 10px rgba(255, 255, 255, 0.18);
+}
+
+.start-button:hover {
+  box-shadow:
+    0 18px 36px rgba(10, 16, 28, 0.18),
+    0 6px 14px rgba(255, 255, 255, 0.2);
+}
+
+.progress-shell {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.03)
+  );
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.14),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+}
+
+.progress-fill {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.92),
+    rgba(255, 255, 255, 0.78)
+  );
+  box-shadow:
+    0 0 12px rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.goal-card {
+  padding: 1.1rem 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.75rem;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.11),
+    rgba(255, 255, 255, 0.06)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 14px 36px rgba(10, 16, 28, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.goal-ring-wrap {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  flex-shrink: 0;
+}
+
+.goal-ring {
+  width: 110px;
+  height: 110px;
+  transform: rotate(-90deg);
+}
+
+.goal-ring-track,
+.goal-ring-fill {
+  fill: none;
+  stroke-width: 10;
+}
+
+.goal-ring-track {
+  stroke: rgba(255, 255, 255, 0.12);
+}
+
+.goal-ring-fill {
+  stroke: rgba(255, 255, 255, 0.96);
+  stroke-linecap: round;
+  stroke-dasharray: 289;
+  stroke-dashoffset: 289;
+  transition:
+    stroke-dashoffset 360ms ease,
+    filter 220ms ease;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.18));
+}
+
+.goal-ring-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.goal-ring-value {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 12, 20, 0.24);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+
+.modal-panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 860px);
+  max-height: min(88vh, 760px);
+  overflow: auto;
+  padding: clamp(1.4rem, 2vw, 2rem);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 2rem;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0.09)
+  );
+  box-shadow:
+    0 36px 100px rgba(10, 16, 28, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(22px);
+  opacity: 0;
+  transform: translateY(18px) scale(0.97);
+  transition:
+    opacity 300ms ease,
+    transform 300ms ease;
+}
+
+.modal-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 9rem;
+  border-radius: 2rem 2rem 0 0;
+  background: radial-gradient(
+    circle at top center,
+    rgba(255, 255, 255, 0.12),
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+.modal-overlay.open .modal-backdrop {
+  opacity: 1;
+}
+
+.modal-overlay.open .modal-panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+button {
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    opacity 180ms ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button.tap-pop {
+  animation: tap-pop 280ms ease;
+}
+
+@keyframes tap-pop {
+  0% {
+    transform: scale(1);
+  }
+
+  35% {
+    transform: scale(0.9);
+  }
+
+  65% {
+    transform: scale(1.04);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.task-item.completed .task-text {
+  color: rgba(255, 255, 255, 0.48);
+  text-decoration: line-through;
+}
+
+.task-item.completed .task-check {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 0 0 5px rgba(80, 116, 150, 0.95);
+}
+
+.toast-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -12%;
+  width: 10px;
+  height: 18px;
+  border-radius: 999px;
+  opacity: 0.9;
+  animation: confetti-fall linear forwards;
+}
+
+@keyframes confetti-fall {
+  from {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+
+  to {
+    transform: translate3d(var(--drift), 115vh, 0) rotate(560deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pomaxis</title>
+    <meta name="theme-color" content="#4c80ad" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Pomaxis" />
+    <meta
+      name="description"
+      content="Pomaxis is a minimalist Pomodoro timer with customizable durations, soft background moods, and a lightweight task list."
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="pomaxis_icon_192.png"
+    />
+    <link rel="apple-touch-icon" href="pomaxis_icon_192.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="min-h-full font-sans text-white">
+    <div class="page-bg"></div>
+
+    <main
+      class="relative mx-auto flex min-h-screen w-full max-w-4xl flex-col px-5 py-7"
+    >
+      <header
+        class="mx-auto mb-8 flex w-full max-w-2xl items-center justify-between gap-4"
+      >
+        <div class="flex items-center gap-3">
+          <img
+            src="pomaxis_logo.png"
+            alt="Pomaxis logo"
+            class="app-logo h-11 w-11 rounded-2xl object-cover"
+          />
+          <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">
+            Pomaxis
+          </h1>
+        </div>
+
+        <button
+          id="toggle-settings"
+          type="button"
+          class="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white/90 transition hover:bg-white/15"
+          aria-expanded="false"
+        >
+          Customize
+        </button>
+      </header>
+
+      <section
+        class="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center text-center"
+      >
+        <div
+          class="mb-8 grid w-full max-w-xl grid-cols-3 items-center gap-2 rounded-2xl bg-white/8 p-1.5 backdrop-blur-sm"
+        >
+          <button
+            type="button"
+            class="session-tab active min-w-0 rounded-xl px-2 py-2 text-xs font-semibold transition sm:px-4 sm:text-sm"
+            data-session="pomodoro"
+          >
+            Pomodoro
+          </button>
+          <button
+            type="button"
+            class="session-tab min-w-0 rounded-xl px-2 py-2 text-xs font-semibold transition sm:px-4 sm:text-sm"
+            data-session="shortBreak"
+          >
+            Short Break
+          </button>
+          <button
+            type="button"
+            class="session-tab min-w-0 rounded-xl px-2 py-2 text-xs font-semibold transition sm:px-4 sm:text-sm"
+            data-session="longBreak"
+          >
+            Long Break
+          </button>
+        </div>
+
+        <p
+          id="timer-label"
+          class="mb-3 text-xs font-bold uppercase tracking-[0.42em] text-white/60"
+        >
+          Pomodoro
+        </p>
+        <h2
+          id="timer-display"
+          class="timer-pop select-none text-[5.7rem] font-extrabold leading-none tracking-[-0.03em] sm:text-[8.5rem] md:text-[10rem]"
+        >
+          25:00
+        </h2>
+        <p id="timer-subtext" class="mt-4 text-sm text-white/70">
+          Classic focus block ready.
+        </p>
+
+        <div
+          class="progress-shell mt-7 h-2.5 w-full max-w-xl overflow-hidden rounded-full"
+        >
+          <div
+            id="progress-bar"
+            class="progress-fill h-full w-full rounded-full transition-all duration-700 ease-out"
+          ></div>
+        </div>
+
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <button
+            id="start-pause"
+            type="button"
+            class="start-button min-w-[190px] rounded-xl bg-white px-8 py-4 text-xl font-extrabold uppercase tracking-[2px] text-slate-700 transition hover:-translate-y-0.5 hover:bg-white/95"
+          >
+            Start
+          </button>
+          <button
+            id="reset"
+            type="button"
+            class="rounded-xl bg-white/10 px-6 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-white/15"
+          >
+            Reset
+          </button>
+        </div>
+      </section>
+
+      <section class="goal-card mx-auto mt-8 w-full max-w-2xl text-left">
+        <div
+          class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div class="flex items-center gap-4">
+            <div class="goal-ring-wrap">
+              <svg class="goal-ring" viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="goal-ring-track" cx="60" cy="60" r="46"></circle>
+                <circle
+                  id="goal-progress-ring"
+                  class="goal-ring-fill"
+                  cx="60"
+                  cy="60"
+                  r="46"
+                ></circle>
+              </svg>
+              <div class="goal-ring-center">
+                <strong id="goal-progress-count" class="goal-ring-value"
+                  >0/4</strong
+                >
+              </div>
+            </div>
+
+            <div>
+              <p
+                class="text-xs font-bold uppercase tracking-[0.34em] text-white/55"
+              >
+                Daily Goal
+              </p>
+              <h3 class="mt-2 text-2xl font-extrabold tracking-tight">
+                Pomodoro Target
+              </h3>
+              <p id="goal-summary" class="mt-2 text-sm text-white/72">
+                Complete 4 pomodoros today.
+              </p>
+            </div>
+          </div>
+
+          <form id="goal-form" class="flex items-end gap-2 sm:min-w-[210px]">
+            <label class="flex-1">
+              <span class="mb-2 block text-sm text-white/72">Goal</span>
+              <input
+                id="goal-input"
+                type="number"
+                min="1"
+                max="24"
+                class="w-full rounded-xl border border-white/10 bg-white/10 px-3 py-3 text-white outline-none focus:border-white/30"
+              />
+            </label>
+            <button
+              type="submit"
+              class="rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+            >
+              Save
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <section class="mx-auto mt-12 w-full max-w-2xl text-left">
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <h3 class="text-xl font-bold tracking-tight">Tasks</h3>
+          <p id="task-progress" class="text-sm text-white/72">0/0 completed</p>
+        </div>
+
+        <form id="task-form" class="mb-3 flex gap-2">
+          <input
+            id="task-input"
+            type="text"
+            maxlength="120"
+            placeholder="Add a task"
+            class="w-full rounded-xl border border-white/10 bg-transparent px-4 py-3 text-white placeholder:text-white/45 outline-none transition focus:border-white/30"
+          />
+          <button
+            type="submit"
+            class="rounded-xl border border-white/20 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+          >
+            Add
+          </button>
+        </form>
+
+        <ul
+          id="task-list"
+          class="divide-y divide-white/10 border-y border-white/10"
+        ></ul>
+
+        <template id="task-template">
+          <li class="task-item flex items-center gap-3 py-4">
+            <button
+              type="button"
+              class="task-check h-6 w-6 rounded-full border border-white/35 transition hover:bg-white/10"
+              aria-label="Toggle task completion"
+            ></button>
+            <p
+              class="task-text min-w-0 flex-1 truncate text-base text-white/95"
+            ></p>
+            <button
+              type="button"
+              class="task-remove rounded-lg px-2 py-1 text-sm text-white/55 transition hover:bg-white/8 hover:text-white"
+              aria-label="Remove task"
+            >
+              Remove
+            </button>
+          </li>
+        </template>
+      </section>
+
+      <footer
+        class="mx-auto mt-8 flex w-full max-w-2xl items-center justify-between text-sm text-white/70"
+      >
+        <p id="daily-summary">0 pomodoros today</p>
+        <span id="status-badge">Idle</span>
+      </footer>
+
+      <div id="settings-modal" class="modal-overlay hidden" aria-hidden="true">
+        <div class="modal-backdrop" data-close-modal="true"></div>
+        <section
+          id="settings-panel"
+          class="modal-panel"
+          aria-label="Customization"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div class="mb-5 flex items-start justify-between gap-4">
+            <div>
+              <p
+                class="text-xs font-bold uppercase tracking-[0.34em] text-white/55"
+              >
+                Customize
+              </p>
+              <h2 class="mt-2 text-2xl font-extrabold tracking-tight">
+                Shape Your Flow
+              </h2>
+            </div>
+            <button
+              id="close-settings"
+              type="button"
+              class="rounded-xl bg-white/8 px-3 py-2 text-sm font-semibold text-white/85 transition hover:bg-white/14"
+              aria-label="Close customization window"
+            >
+              Close
+            </button>
+          </div>
+
+          <div class="grid gap-8">
+            <div>
+              <p
+                class="mb-3 text-xs font-bold uppercase tracking-[0.34em] text-white/60"
+              >
+                Focus Mode
+              </p>
+              <div
+                class="inline-flex flex-wrap items-center gap-2 rounded-2xl bg-white/7 p-2"
+              >
+                <button
+                  type="button"
+                  class="preset-tab rounded-xl px-4 py-2 text-sm font-semibold transition"
+                  data-preset="classic"
+                >
+                  Classic 25
+                </button>
+                <button
+                  type="button"
+                  class="preset-tab rounded-xl px-4 py-2 text-sm font-semibold transition"
+                  data-preset="deep"
+                >
+                  Deep 50
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <p
+                class="mb-3 text-xs font-bold uppercase tracking-[0.34em] text-white/60"
+              >
+                Durations
+              </p>
+              <div class="grid gap-4 sm:grid-cols-3">
+                <label class="block text-sm">
+                  <span class="mb-2 block text-white/70">Pomodoro</span>
+                  <input
+                    id="pomodoro-minutes"
+                    type="number"
+                    min="1"
+                    max="180"
+                    class="w-full rounded-xl border border-white/10 bg-white/10 px-3 py-2.5 text-white outline-none focus:border-white/30"
+                  />
+                </label>
+                <label class="block text-sm">
+                  <span class="mb-2 block text-white/70">Short break</span>
+                  <input
+                    id="short-break-minutes"
+                    type="number"
+                    min="1"
+                    max="60"
+                    class="w-full rounded-xl border border-white/10 bg-white/10 px-3 py-2.5 text-white outline-none focus:border-white/30"
+                  />
+                </label>
+                <label class="block text-sm">
+                  <span class="mb-2 block text-white/70">Long break</span>
+                  <input
+                    id="long-break-minutes"
+                    type="number"
+                    min="1"
+                    max="90"
+                    class="w-full rounded-xl border border-white/10 bg-white/10 px-3 py-2.5 text-white outline-none focus:border-white/30"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div class="grid gap-5 sm:grid-cols-3">
+              <div>
+                <p
+                  class="mb-3 text-xs font-bold uppercase tracking-[0.34em] text-white/60"
+                >
+                  Work Mood
+                </p>
+                <div class="flex flex-wrap gap-2" id="work-swatches"></div>
+              </div>
+              <div>
+                <p
+                  class="mb-3 text-xs font-bold uppercase tracking-[0.34em] text-white/60"
+                >
+                  Short Break
+                </p>
+                <div class="flex flex-wrap gap-2" id="short-swatches"></div>
+              </div>
+              <div>
+                <p
+                  class="mb-3 text-xs font-bold uppercase tracking-[0.34em] text-white/60"
+                >
+                  Long Break
+                </p>
+                <div class="flex flex-wrap gap-2" id="long-swatches"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 flex flex-wrap justify-end gap-2">
+            <button
+              id="reset-colors"
+              type="button"
+              class="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
+            >
+              Reset colors
+            </button>
+            <button
+              id="save-settings"
+              type="button"
+              class="rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-white/90"
+            >
+              Save changes
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <section
+        id="toast"
+        class="pointer-events-none fixed bottom-5 right-5 translate-y-3 rounded-xl bg-black/70 px-4 py-3 text-sm text-white opacity-0 transition-all duration-300"
+        aria-live="assertive"
+        aria-atomic="true"
+      ></section>
+      <div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
+    </main>
+
+    <script src="main.js"></script>
+  </body>
+</html>
