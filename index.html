@@ -49,14 +49,26 @@
           </h1>
         </div>
 
-        <button
-          id="toggle-settings"
-          type="button"
-          class="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white/90 transition hover:bg-white/15"
-          aria-expanded="false"
-        >
-          Customize
-        </button>
+        <div class="flex items-center gap-2">
+          <button
+            id="white-noise-toggle"
+            type="button"
+            class="focus-noise-button"
+            aria-pressed="false"
+            aria-label="Turn focus noise on"
+            title="Turn focus noise on"
+          >
+            Air
+          </button>
+          <button
+            id="toggle-settings"
+            type="button"
+            class="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white/90 transition hover:bg-white/15"
+            aria-expanded="false"
+          >
+            Customize
+          </button>
+        </div>
       </header>
 
       <section
