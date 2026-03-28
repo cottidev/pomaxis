@@ -47,6 +47,7 @@ const elements = {
   progressBar: document.getElementById("progress-bar"),
   startPause: document.getElementById("start-pause"),
   reset: document.getElementById("reset"),
+  whiteNoiseToggle: document.getElementById("white-noise-toggle"),
   toggleSettings: document.getElementById("toggle-settings"),
   settingsModal: document.getElementById("settings-modal"),
   settingsPanel: document.getElementById("settings-panel"),
@@ -98,6 +99,12 @@ let state = {
 let draftColors = { ...DEFAULT_COLORS };
 let timerInterval = null;
 let toastTimeout = null;
+let clickSound = null;
+let whiteNoisePlaying = false;
+let whiteNoiseContext = null;
+let whiteNoiseNode = null;
+let whiteNoiseGainNode = null;
+let whiteNoiseFilterNodes = [];
 
 initialize();
 
@@ -156,8 +163,10 @@ function normalizeState() {
 }
 
 function bindEvents() {
+  document.addEventListener("click", handleGlobalClick);
   elements.startPause.addEventListener("click", toggleTimer);
   elements.reset.addEventListener("click", resetTimer);
+  elements.whiteNoiseToggle.addEventListener("click", toggleWhiteNoise);
   elements.toggleSettings.addEventListener("click", toggleSettingsPanel);
   elements.closeSettings.addEventListener("click", closeSettingsModal);
   elements.saveSettings.addEventListener("click", saveCustomizations);
@@ -423,6 +432,7 @@ function render() {
   renderPresetTabs();
   renderSessionTabs();
   renderTimer();
+  renderWhiteNoiseToggle();
   renderGoal();
   renderSettings();
   renderTasks();
@@ -492,6 +502,19 @@ function renderTimer() {
   document.title = `${formatTime(state.timeLeft)} · ${SESSION_LABELS[state.session]} · Pomaxis`;
 }
 
+function renderWhiteNoiseToggle() {
+  elements.whiteNoiseToggle.textContent = "Air";
+  elements.whiteNoiseToggle.setAttribute(
+    "aria-pressed",
+    String(whiteNoisePlaying),
+  );
+  const label = whiteNoisePlaying
+    ? "Turn focus noise off"
+    : "Turn focus noise on";
+  elements.whiteNoiseToggle.setAttribute("aria-label", label);
+  elements.whiteNoiseToggle.title = label;
+}
+
 function renderSettings() {
   elements.settingsModal.classList.toggle("hidden", !state.settingsOpen);
   elements.settingsModal.classList.toggle("open", state.settingsOpen);
@@ -516,6 +539,15 @@ function handleModalClick(event) {
   if (closeTrigger) {
     closeSettingsModal();
   }
+}
+
+function handleGlobalClick(event) {
+  const button = event.target.closest("button");
+  if (!(button instanceof HTMLButtonElement)) {
+    return;
+  }
+
+  playClickSound();
 }
 
 function handleKeydown(event) {
@@ -656,6 +688,156 @@ function animateTap(button) {
   button.classList.remove("tap-pop");
   void button.offsetWidth;
   button.classList.add("tap-pop");
+}
+
+function getClickSound() {
+  if (!clickSound) {
+    clickSound = new Audio("./click_sound.mp3");
+    clickSound.preload = "auto";
+  }
+
+  return clickSound;
+}
+
+function playClickSound() {
+  const audio = getClickSound();
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
+}
+
+function getWhiteNoiseContext() {
+  if (!whiteNoiseContext) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) {
+      return null;
+    }
+
+    whiteNoiseContext = new AudioContextClass();
+  }
+
+  return whiteNoiseContext;
+}
+
+function createProceduralWhiteNoiseNode(context) {
+  if (typeof context.createScriptProcessor !== "function") {
+    throw new Error("Continuous noise generation unsupported");
+  }
+
+  const processor = context.createScriptProcessor(2048, 1, 1);
+  let lastSample = 0;
+  processor.onaudioprocess = (event) => {
+    const output = event.outputBuffer.getChannelData(0);
+    for (let index = 0; index < output.length; index += 1) {
+      const white = Math.random() * 2 - 1;
+      lastSample = (lastSample + 0.02 * white) / 1.02;
+      output[index] = lastSample * 3.2;
+    }
+  };
+  return processor;
+}
+
+function createAirplaneNoiseFilters(context) {
+  const highpass = context.createBiquadFilter();
+  highpass.type = "highpass";
+  highpass.frequency.value = 45;
+  highpass.Q.value = 0.7;
+
+  const lowshelf = context.createBiquadFilter();
+  lowshelf.type = "lowshelf";
+  lowshelf.frequency.value = 180;
+  lowshelf.gain.value = 8;
+
+  const lowpass = context.createBiquadFilter();
+  lowpass.type = "lowpass";
+  lowpass.frequency.value = 900;
+  lowpass.Q.value = 0.8;
+
+  const highshelf = context.createBiquadFilter();
+  highshelf.type = "highshelf";
+  highshelf.frequency.value = 1400;
+  highshelf.gain.value = -10;
+
+  return [highpass, lowshelf, lowpass, highshelf];
+}
+
+function stopWhiteNoiseLoop() {
+  if (whiteNoiseNode) {
+    if ("onaudioprocess" in whiteNoiseNode) {
+      whiteNoiseNode.onaudioprocess = null;
+    }
+
+    if (typeof whiteNoiseNode.stop === "function") {
+      try {
+        whiteNoiseNode.stop();
+      } catch {}
+    }
+
+    whiteNoiseNode.disconnect();
+    whiteNoiseNode = null;
+  }
+
+  if (whiteNoiseGainNode) {
+    whiteNoiseGainNode.disconnect();
+    whiteNoiseGainNode = null;
+  }
+
+  whiteNoiseFilterNodes.forEach((node) => node.disconnect());
+  whiteNoiseFilterNodes = [];
+
+  whiteNoisePlaying = false;
+  renderWhiteNoiseToggle();
+}
+
+async function startWhiteNoiseLoop() {
+  stopWhiteNoiseLoop();
+
+  const context = getWhiteNoiseContext();
+  if (!context) {
+    throw new Error("AudioContext unsupported");
+  }
+
+  if (context.state === "suspended") {
+    await context.resume();
+  }
+
+  const gain = context.createGain();
+  gain.gain.value = 0.12;
+
+  const noiseNode = createProceduralWhiteNoiseNode(context);
+  const filters = createAirplaneNoiseFilters(context);
+
+  noiseNode.connect(filters[0]);
+  filters[0].connect(filters[1]);
+  filters[1].connect(filters[2]);
+  filters[2].connect(filters[3]);
+  filters[3].connect(gain);
+  gain.connect(context.destination);
+
+  if (typeof noiseNode.start === "function") {
+    noiseNode.start();
+  }
+
+  whiteNoiseNode = noiseNode;
+  whiteNoiseGainNode = gain;
+  whiteNoiseFilterNodes = filters;
+  whiteNoisePlaying = true;
+  renderWhiteNoiseToggle();
+}
+
+async function toggleWhiteNoise() {
+  if (whiteNoisePlaying) {
+    stopWhiteNoiseLoop();
+    showToast("White noise off.");
+    return;
+  }
+
+  try {
+    await startWhiteNoiseLoop();
+    showToast("White noise on.");
+  } catch {
+    stopWhiteNoiseLoop();
+    showToast("White noise couldn't start.");
+  }
 }
 
 function celebrate() {
