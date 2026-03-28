@@ -33,6 +33,9 @@ body {
 .focus-noise-button {
   width: 2.35rem;
   height: 2.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
   background: linear-gradient(
@@ -57,6 +60,16 @@ body {
   box-shadow:
     0 10px 22px rgba(10, 16, 28, 0.2),
     0 0 0 4px rgba(255, 255, 255, 0.08);
+}
+
+.focus-noise-button:not([aria-pressed="true"]) {
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.control-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
 }
 
 .preset-tab,
