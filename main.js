@@ -47,6 +47,7 @@ const elements = {
   progressBar: document.getElementById("progress-bar"),
   startPause: document.getElementById("start-pause"),
   reset: document.getElementById("reset"),
+  clickSoundToggle: document.getElementById("click-sound-toggle"),
   whiteNoiseToggle: document.getElementById("white-noise-toggle"),
   toggleSettings: document.getElementById("toggle-settings"),
   settingsModal: document.getElementById("settings-modal"),
@@ -94,6 +95,7 @@ let state = {
   tasks: [],
   settingsOpen: false,
   colors: { ...DEFAULT_COLORS },
+  clickSoundEnabled: true,
 };
 
 let draftColors = { ...DEFAULT_COLORS };
@@ -105,6 +107,38 @@ let whiteNoiseContext = null;
 let whiteNoiseNode = null;
 let whiteNoiseGainNode = null;
 let whiteNoiseFilterNodes = [];
+const CLICK_SOUND_ICON_ON = `
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    class="control-icon"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M5 10.5h3.4L12.8 7v10l-4.4-3.5H5z"></path>
+    <path d="M16 9.2a4.6 4.6 0 0 1 0 5.6"></path>
+    <path d="M18.6 7a8.1 8.1 0 0 1 0 10"></path>
+  </svg>
+`;
+const CLICK_SOUND_ICON_OFF = `
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    class="control-icon"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M5 10.5h3.4L12.8 7v10l-4.4-3.5H5z"></path>
+    <path d="m15.8 9.3 4.4 4.4"></path>
+    <path d="m20.2 9.3-4.4 4.4"></path>
+  </svg>
+`;
 
 initialize();
 
@@ -154,6 +188,7 @@ function normalizeState() {
   state.tasks = Array.isArray(state.tasks) ? state.tasks : [];
   state.settingsOpen = Boolean(state.settingsOpen);
   state.colors = normalizeColors(state.colors);
+  state.clickSoundEnabled = state.clickSoundEnabled !== false;
   draftColors = { ...state.colors };
 
   applyBackgroundMood();
@@ -166,6 +201,7 @@ function bindEvents() {
   document.addEventListener("click", handleGlobalClick);
   elements.startPause.addEventListener("click", toggleTimer);
   elements.reset.addEventListener("click", resetTimer);
+  elements.clickSoundToggle.addEventListener("click", toggleClickSound);
   elements.whiteNoiseToggle.addEventListener("click", toggleWhiteNoise);
   elements.toggleSettings.addEventListener("click", toggleSettingsPanel);
   elements.closeSettings.addEventListener("click", closeSettingsModal);
@@ -432,6 +468,7 @@ function render() {
   renderPresetTabs();
   renderSessionTabs();
   renderTimer();
+  renderClickSoundToggle();
   renderWhiteNoiseToggle();
   renderGoal();
   renderSettings();
@@ -515,6 +552,21 @@ function renderWhiteNoiseToggle() {
   elements.whiteNoiseToggle.title = label;
 }
 
+function renderClickSoundToggle() {
+  elements.clickSoundToggle.innerHTML = state.clickSoundEnabled
+    ? CLICK_SOUND_ICON_ON
+    : CLICK_SOUND_ICON_OFF;
+  elements.clickSoundToggle.setAttribute(
+    "aria-pressed",
+    String(state.clickSoundEnabled),
+  );
+  const label = state.clickSoundEnabled
+    ? "Mute click sound"
+    : "Enable click sound";
+  elements.clickSoundToggle.setAttribute("aria-label", label);
+  elements.clickSoundToggle.title = label;
+}
+
 function renderSettings() {
   elements.settingsModal.classList.toggle("hidden", !state.settingsOpen);
   elements.settingsModal.classList.toggle("open", state.settingsOpen);
@@ -544,6 +596,10 @@ function handleModalClick(event) {
 function handleGlobalClick(event) {
   const button = event.target.closest("button");
   if (!(button instanceof HTMLButtonElement)) {
+    return;
+  }
+
+  if (button === elements.clickSoundToggle) {
     return;
   }
 
@@ -700,9 +756,22 @@ function getClickSound() {
 }
 
 function playClickSound() {
+  if (!state.clickSoundEnabled) {
+    return;
+  }
+
   const audio = getClickSound();
   audio.currentTime = 0;
   audio.play().catch(() => {});
+}
+
+function toggleClickSound() {
+  state.clickSoundEnabled = !state.clickSoundEnabled;
+  renderClickSoundToggle();
+  persistState();
+  showToast(
+    state.clickSoundEnabled ? "Click sound on." : "Click sound muted.",
+  );
 }
 
 function getWhiteNoiseContext() {
